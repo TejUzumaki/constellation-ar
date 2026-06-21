@@ -19,78 +19,57 @@
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: #000; color: #fff; overflow: hidden;
             user-select: none; -webkit-user-select: none;
+            position: fixed; width: 100%; height: 100%;
         }
         #camera-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: #000; }
         #camera-container video { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
         #camera-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
         #ar-ui-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none; display: none; }
         #permission-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #141923 0%, #050608 100%); z-index: 1000; display: flex; justify-content: center; align-items: center; }
         .loader-card { background: rgba(255,255,255,0.02); padding: 40px 30px; border-radius: 28px; text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,0.8); width: 85%; max-width: 340px; border: 1px solid var(--glass-border); }
         h1 { font-size: 2rem; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
         #status-text { font-size: 13px; color: #858e96; margin-bottom: 20px; min-height: 20px; }
         .action-btn { background: linear-gradient(135deg, var(--accent-blue), var(--accent-green)); color: white; border: none; padding: 15px 40px; font-size: 15px; font-weight: 700; border-radius: 30px; cursor: pointer; box-shadow: 0 10px 25px rgba(46,204,113,0.25); }
+        
         .dashboard-header { position: absolute; top: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; }
         .telemetry-capsule { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 16px; font-size: 10px; font-weight: 600; font-family: monospace; display: flex; gap: 10px; backdrop-filter: blur(10px); }
         .status-pill { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 16px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; backdrop-filter: blur(10px); }
         .pulse-indicator { width: 7px; height: 7px; background-color: var(--accent-red); border-radius: 50%; }
         .tracking-active .pulse-indicator { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
         
-        /* Center reticle */
-        #reticle { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 40px; height: 40px; pointer-events: none; }
-        #reticle::before, #reticle::after { content: ''; position: absolute; background: rgba(255,255,255,0.3); }
-        #reticle::before { top: 50%; left: 0; width: 100%; height: 1px; transform: translateY(-50%); }
-        #reticle::after { left: 50%; top: 0; height: 100%; width: 1px; transform: translateX(-50%); }
-        #reticle-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 6px; height: 6px; border: 1px solid rgba(255,255,255,0.5); border-radius: 50%; }
-        
         /* Ben 10 Style Vertical Scroll Wheel */
         #constellation-wheel {
-            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-            height: 280px; width: 90px; overflow-y: scroll; scroll-snap-type: y mandatory;
+            position: absolute; right: 0; top: 0; height: 100vh; width: 100px;
+            overflow-y: scroll; scroll-snap-type: y mandatory;
             pointer-events: auto; scrollbar-width: none;
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            display: flex; flex-direction: column; align-items: center;
+            padding-top: 40vh; padding-bottom: 40vh;
         }
         #constellation-wheel::-webkit-scrollbar { display: none; }
         .wheel-item {
-            scroll-snap-align: center; height: 50px;
+            scroll-snap-align: center; height: 50px; min-height: 50px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
-            transition: color 0.2s, font-size 0.2s; text-align: center;
+            font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.3);
+            transition: all 0.2s; text-align: center; width: 90px;
         }
-        .wheel-item.active { color: var(--accent-blue); font-size: 14px; text-shadow: 0 0 10px var(--accent-blue); }
+        .wheel-item.active { color: var(--accent-blue); font-size: 16px; text-shadow: 0 0 10px var(--accent-blue); transform: scale(1.2); }
         
-        /* Bottom panel */
         #bottom-panel {
-            position: absolute; bottom: 15px; left: 15px;
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: var(--panel-bg); border: 1px solid var(--glass-border);
-            border-radius: 16px; padding: 12px 16px; pointer-events: auto;
-            backdrop-filter: blur(10px); display: none; max-width: 200px;
-        }
-        #bottom-panel h3 { font-size: 14px; margin-bottom: 4px; color: var(--accent-gold); }
-        #bottom-panel p { font-size: 10px; color: #858e96; }
-        
-        /* Discover mode */
-        #discover-btn {
-            position: absolute; bottom: 15px; right: 110px;
-            background: var(--panel-bg); border: 1px solid var(--glass-border);
-            padding: 10px 16px; border-radius: 16px; font-size: 12px; font-weight: 600;
-            pointer-events: auto; cursor: pointer; backdrop-filter: blur(10px); color: #fff;
-        }
-        #discover-btn.active { background: rgba(46,204,113,0.3); border-color: var(--accent-green); }
-        
-        #discover-notification {
-            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-            background: var(--panel-bg); border: 1px solid var(--accent-gold);
-            padding: 12px 20px; border-radius: 16px; pointer-events: auto;
+            border-radius: 16px; padding: 12px 20px; pointer-events: auto;
             backdrop-filter: blur(10px); display: none; text-align: center;
         }
-        #discover-notification h3 { font-size: 14px; color: var(--accent-gold); margin-bottom: 6px; }
-        #discover-notification button { background: var(--accent-gold); color: #000; border: none; padding: 6px 16px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        #bottom-panel h3 { font-size: 16px; margin-bottom: 4px; color: var(--accent-gold); }
+        #bottom-panel p { font-size: 11px; color: #858e96; }
         
         #clear-btn {
-            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
-            background: var(--panel-bg); border: 1px solid var(--accent-red);
-            padding: 8px 16px; border-radius: 12px; font-size: 11px; font-weight: 600;
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(231, 76, 60, 0.3); border: 1px solid var(--accent-red);
+            padding: 10px 20px; border-radius: 12px; font-size: 12px; font-weight: 600;
             pointer-events: auto; cursor: pointer; backdrop-filter: blur(10px); color: var(--accent-red); display: none;
         }
     </style>
@@ -111,7 +90,6 @@
             <div class="telemetry-capsule">
                 <div>★: <span id="star-count" style="color:var(--accent-green)">0</span></div>
                 <div>GPS: <span id="gps-status" style="color:var(--accent-red)">OFF</span></div>
-                <div>SKY: <span id="sky-status" style="color:var(--accent-red)">NO</span></div>
             </div>
             <div class="status-pill" id="orientation-status">
                 <span class="pulse-indicator"></span>
@@ -119,19 +97,11 @@
             </div>
         </div>
         
-        <div id="reticle"><div id="reticle-dot"></div></div>
         <div id="constellation-wheel"></div>
         
         <div id="bottom-panel">
             <h3 id="panel-title"></h3>
             <p id="panel-info"></p>
-        </div>
-        
-        <button id="discover-btn">🔍 Discover</button>
-        
-        <div id="discover-notification">
-            <h3 id="discover-name"></h3>
-            <button id="discover-show">Show Constellation</button>
         </div>
         
         <button id="clear-btn">✕ Clear Lines</button>
@@ -145,15 +115,10 @@
         let starsGroup;
         let constellationLinesGroup;
         let userLat, userLon;
-        let astronomicalData = { stars: [], lines: {}, names: {} };
-        let starLookup = {}; // bayer designation -> {x, y, z}
-        let constellationCenters = {}; // abbreviation -> {x, y, z}
+        let astronomicalData = { stars: [], lines: {} };
+        let starLookup = {};
         let currentConstellation = null;
-        let discoverModeActive = false;
-        let discoverTimer = 0;
-        let discoverLastConstellation = null;
         let smoothAlpha = 0, smoothBeta = 0, smoothGamma = 0;
-        let starOpacity = 1.0;
         
         const permissionScreen = document.getElementById('permission-screen');
         const statusText = document.getElementById('status-text');
@@ -174,21 +139,14 @@
         async function loadData() {
             try {
                 statusText.innerText = "Downloading star catalogs...";
-                const [starsRes, linesRes, namesRes] = await Promise.all([
+                const [starsRes, linesRes] = await Promise.all([
                     fetch('data/stars.6.json').then(r => r.json()),
-                    fetch('data/constellations.lines.json').then(r => r.json()),
-                    fetch('data/starnames.json').then(r => r.json())
+                    fetch('data/constellations.lines.json').then(r => r.json())
                 ]);
                 astronomicalData.stars = starsRes.features || [];
                 astronomicalData.lines = linesRes;
-                astronomicalData.names = namesRes;
-                
-                console.log('Stars loaded:', astronomicalData.stars.length);
-                console.log('Lines format:', Object.keys(astronomicalData.lines)[0], astronomicalData.lines[Object.keys(astronomicalData.lines)[0]]);
-                console.log('Names format:', Object.keys(astronomicalData.names)[0], astronomicalData.names[Object.keys(astronomicalData.names)[0]]);
                 
                 buildStarLookup();
-                buildConstellationCenters();
                 
                 statusText.innerText = "Ready! " + astronomicalData.stars.length + " stars loaded.";
                 startBtn.style.display = 'block';
@@ -209,22 +167,18 @@
         }
 
         function buildStarLookup() {
-            // Build lookup from star catalog
             astronomicalData.stars.forEach(feature => {
                 const coords = feature.geometry.coordinates;
                 const pos = raDecTo3D(coords[0], coords[1]);
                 const id = feature.id || (feature.properties && feature.properties.id);
                 
-                // Store by ID
                 if (id) starLookup[id] = pos;
                 
-                // Store by various name properties
                 if (feature.properties) {
                     const props = feature.properties;
                     if (props.name) starLookup[props.name.toLowerCase()] = pos;
                     if (props.bayer) starLookup[normalizeBayer(props.bayer)] = pos;
                     if (props.flamsteed) starLookup[props.flamsteed.toLowerCase()] = pos;
-                    // Also store bayer with constellation
                     if (props.bayer && props.con) {
                         const bayerParts = normalizeBayer(props.bayer).split(' ');
                         if (bayerParts.length === 2) {
@@ -233,66 +187,6 @@
                     }
                 }
             });
-            
-            // Also build from starnames.json for additional mappings
-            Object.entries(astronomicalData.names).forEach(([id, names]) => {
-                if (starLookup[id] || starLookup[id.toString()]) {
-                    const pos = starLookup[id] || starLookup[id.toString()];
-                    if (names.bayer) starLookup[normalizeBayer(names.bayer)] = pos;
-                    if (names.name) starLookup[names.name.toLowerCase()] = pos;
-                    if (names.flamsteed) starLookup[names.flamsteed.toLowerCase()] = pos;
-                }
-            });
-            
-            console.log('Star lookup entries:', Object.keys(starLookup).length);
-        }
-
-        function buildConstellationCenters() {
-            Object.keys(astronomicalData.lines).forEach(constAbbr => {
-                const lines = getConstellationLines(constAbbr);
-                if (lines.length === 0) return;
-                
-                // Collect all unique star names from lines
-                const starNames = new Set();
-                lines.forEach(pair => {
-                    if (Array.isArray(pair)) {
-                        starNames.add(pair[0]);
-                        starNames.add(pair[1]);
-                    }
-                });
-                
-                // Average positions of found stars
-                let totalX = 0, totalY = 0, totalZ = 0, count = 0;
-                starNames.forEach(name => {
-                    const pos = starLookup[name.toLowerCase()] || starLookup[normalizeBayer(name)];
-                    if (pos) {
-                        totalX += pos.x; totalY += pos.y; totalZ += pos.z;
-                        count++;
-                    }
-                });
-                
-                if (count > 0) {
-                    constellationCenters[constAbbr] = {
-                        x: totalX / count, y: totalY / count, z: totalZ / count
-                    };
-                }
-            });
-            console.log('Constellation centers:', Object.keys(constellationCenters).length);
-        }
-
-        function getConstellationLines(abbr) {
-            const data = astronomicalData.lines[abbr];
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            if (data.lines) return data.lines;
-            return [];
-        }
-
-        function getConstellationName(abbr) {
-            const data = astronomicalData.lines[abbr];
-            if (!data) return abbr;
-            if (typeof data === 'object' && data.name) return data.name;
-            return abbr;
         }
 
         function initThreeJS() {
@@ -324,11 +218,11 @@
             ctx.fillRect(0, 0, 32, 32);
             const starTexture = new THREE.CanvasTexture(canvas);
 
-            // Create 3 groups: bright, medium, dim
+            // Create 3 groups: bright, medium, dim. Increased sizes for visibility.
             const groups = [
-                { filter: m => m < 2, size: 1.0, opacity: 1.0 },
-                { filter: m => m >= 2 && m < 4, size: 0.6, opacity: 0.8 },
-                { filter: m => m >= 4, size: 0.35, opacity: 0.5 }
+                { filter: m => m < 2, size: 2.0, opacity: 1.0 },
+                { filter: m => m >= 2 && m < 4, size: 1.2, opacity: 0.8 },
+                { filter: m => m >= 4, size: 0.8, opacity: 0.5 }
             ];
 
             let totalStars = 0;
@@ -350,9 +244,7 @@
                     opacity: g.opacity, depthWrite: false,
                     blending: THREE.AdditiveBlending, sizeAttenuation: false
                 });
-                const points = new THREE.Points(geometry, material);
-                points.userData.baseOpacity = g.opacity;
-                starsGroup.add(points);
+                starsGroup.add(new THREE.Points(geometry, material));
             });
 
             document.getElementById('star-count').innerText = totalStars;
@@ -367,31 +259,16 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        let lastDiscoverCheck = 0;
         function animate() {
             requestAnimationFrame(animate);
-            
-            // Update star opacity for sky detection
-            starsGroup.children.forEach(points => {
-                points.material.opacity = points.userData.baseOpacity * starOpacity;
-            });
-            
             renderer.render(scene, camera);
-            
-            // Discover mode check (throttled)
-            const now = Date.now();
-            if (discoverModeActive && now - lastDiscoverCheck > 500) {
-                lastDiscoverCheck = now;
-                checkDiscoverMode();
-            }
         }
 
-        // CRITICAL: Rotate CAMERA not stars. Stars stay fixed in world space.
+        // CRITICAL: Rotate CAMERA not stars.
         const eul = new THREE.Euler();
         function handleOrientation(event) {
             if (userLat === undefined) return;
             
-            // Smooth orientation data to reduce jitter
             smoothAlpha += (event.alpha - smoothAlpha) * 0.15;
             smoothBeta += (event.beta - smoothBeta) * 0.15;
             smoothGamma += (event.gamma - smoothGamma) * 0.15;
@@ -400,51 +277,33 @@
             const beta = THREE.Math.degToRad(smoothBeta);
             const gamma = THREE.Math.degToRad(smoothGamma);
             
-            // Apply orientation to CAMERA (not stars)
-            // beta-90 offset: when phone is vertical (beta=90), camera looks at horizon
+            // Apply orientation to CAMERA
             eul.set(beta - Math.PI/2, alpha, -gamma, 'YXZ');
             camera.quaternion.setFromEuler(eul);
             
             document.getElementById('orientation-status').classList.add('tracking-active');
             document.getElementById('hud-text').innerText = "TRACKING";
-            
-            // Sky detection: if phone is pointing up, show stars; if down, hide
-            // beta < 45 = pointing up at sky, beta > 75 = pointing at ground
-            if (smoothBeta < 50) {
-                starOpacity = 1.0;
-                document.getElementById('sky-status').innerText = 'YES';
-                document.getElementById('sky-status').style.color = 'var(--accent-green)';
-            } else if (smoothBeta > 80) {
-                starOpacity = 0.0;
-                document.getElementById('sky-status').innerText = 'NO';
-                document.getElementById('sky-status').style.color = 'var(--accent-red)';
-            } else {
-                starOpacity = 1.0 - ((smoothBeta - 50) / 30);
-                document.getElementById('sky-status').innerText = '~';
-                document.getElementById('sky-status').style.color = 'var(--accent-gold)';
-            }
         }
 
         function populateWheel() {
             const wheel = document.getElementById('constellation-wheel');
             wheel.innerHTML = '';
-            const constellations = Object.keys(astronomicalData.lines).sort();
             
-            constellations.forEach((abbr, index) => {
+            // Sort constellations by name
+            const constellations = Object.keys(astronomicalData.lines).sort((a, b) => {
+                const nameA = astronomicalData.lines[a].name || a;
+                const nameB = astronomicalData.lines[b].name || b;
+                return nameA.localeCompare(nameB);
+            });
+            
+            constellations.forEach(abbr => {
                 const item = document.createElement('div');
                 item.className = 'wheel-item';
                 item.dataset.abbr = abbr;
-                item.innerText = getConstellationName(abbr).toUpperCase().substring(0, 12);
+                const name = astronomicalData.lines[abbr].name || abbr;
+                item.innerText = name;
                 wheel.appendChild(item);
             });
-            
-            // Add spacer items at top and bottom for better centering
-            const topSpacer = document.createElement('div');
-            topSpacer.style.height = '115px';
-            wheel.insertBefore(topSpacer, wheel.firstChild);
-            const bottomSpacer = document.createElement('div');
-            bottomSpacer.style.height = '115px';
-            wheel.appendChild(bottomSpacer);
             
             wheel.addEventListener('scroll', updateWheelScale);
             updateWheelScale();
@@ -466,15 +325,14 @@
                     activeItem = item;
                 }
                 
-                if (distance < 25) {
+                if (distance < 30) {
                     item.classList.add('active');
                 } else {
                     item.classList.remove('active');
                 }
             });
             
-            // Select the closest item to center
-            if (activeItem && minDistance < 30 && activeItem.dataset.abbr) {
+            if (activeItem && minDistance < 40 && activeItem.dataset.abbr) {
                 const abbr = activeItem.dataset.abbr;
                 if (currentConstellation !== abbr) {
                     currentConstellation = abbr;
@@ -485,15 +343,18 @@
 
         function selectConstellation(abbr) {
             clearConstellationLines();
-            const fullName = getConstellationName(abbr);
-            const lines = getConstellationLines(abbr);
+            const data = astronomicalData.lines[abbr];
+            if (!data) return;
+            
+            const fullName = data.name || abbr;
+            const lines = data.lines || [];
             
             document.getElementById('panel-title').innerText = fullName;
             document.getElementById('panel-info').innerText = lines.length + ' line segments';
             document.getElementById('bottom-panel').style.display = 'block';
             document.getElementById('clear-btn').style.display = 'block';
             
-            renderConstellationLines(abbr, lines);
+            renderConstellationLines(lines);
         }
 
         function clearConstellationLines() {
@@ -505,10 +366,8 @@
             }
         }
 
-        function renderConstellationLines(abbr, lines) {
+        function renderConstellationLines(lines) {
             const linePositions = [];
-            let foundStars = 0;
-            let missingStars = 0;
             
             lines.forEach(pair => {
                 if (!Array.isArray(pair) || pair.length < 2) return;
@@ -519,14 +378,8 @@
                 if (pos1 && pos2) {
                     linePositions.push(pos1.x, pos1.y, pos1.z);
                     linePositions.push(pos2.x, pos2.y, pos2.z);
-                    foundStars++;
-                } else {
-                    missingStars++;
-                    console.log('Missing star:', pair[0], pair[1]);
                 }
             });
-            
-            console.log(`Constellation ${abbr}: ${foundStars} lines found, ${missingStars} missing`);
             
             if (linePositions.length === 0) return;
             
@@ -541,67 +394,14 @@
             
             // Animate opacity
             let opacity = 0;
-            const animate = () => {
+            const anim = () => {
                 if (opacity < 0.7) {
                     opacity += 0.03;
                     material.opacity = opacity;
-                    requestAnimationFrame(animate);
+                    requestAnimationFrame(anim);
                 }
             };
-            animate();
-        }
-
-        function checkDiscoverMode() {
-            // Get camera forward direction in world space
-            const forward = new THREE.Vector3(0, 0, -1);
-            forward.applyQuaternion(camera.quaternion);
-            forward.normalize();
-            
-            // Convert to RA/Dec
-            const dec = Math.asin(forward.y) * 180 / Math.PI;
-            const ra = Math.atan2(forward.z, forward.x) * 180 / Math.PI;
-            
-            // Find nearest constellation center
-            let nearestConst = null;
-            let minAngularDist = Infinity;
-            
-            Object.entries(constellationCenters).forEach(([abbr, center]) => {
-                const norm = Math.sqrt(center.x**2 + center.y**2 + center.z**2);
-                const dot = (forward.x * center.x + forward.y * center.y + forward.z * center.z) / norm;
-                const angle = Math.acos(Math.max(-1, Math.min(1, dot))) * 180 / Math.PI;
-                
-                if (angle < minAngularDist) {
-                    minAngularDist = angle;
-                    nearestConst = abbr;
-                }
-            });
-            
-            // If within 20 degrees and same as last check, increment timer
-            if (minAngularDist < 20 && nearestConst === discoverLastConstellation) {
-                discoverTimer += 0.5;
-                if (discoverTimer >= 3) {
-                    showDiscoverNotification(nearestConst);
-                    discoverTimer = 0;
-                }
-            } else {
-                discoverTimer = 0;
-                discoverLastConstellation = nearestConst;
-            }
-        }
-
-        function showDiscoverNotification(abbr) {
-            const notif = document.getElementById('discover-notification');
-            document.getElementById('discover-name').innerText = '✨ ' + getConstellationName(abbr).toUpperCase() + ' DETECTED!';
-            notif.style.display = 'block';
-            
-            document.getElementById('discover-show').onclick = () => {
-                currentConstellation = abbr;
-                selectConstellation(abbr);
-                notif.style.display = 'none';
-            };
-            
-            // Auto-hide after 10 seconds
-            setTimeout(() => { notif.style.display = 'none'; }, 10000);
+            anim();
         }
 
         async function startApp() {
@@ -618,6 +418,14 @@
                 video.muted = true;
                 document.getElementById('camera-container').appendChild(video);
                 await video.play();
+                
+                // Force fullscreen
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => console.log("FS Error:", e));
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                }
+                
             } catch (err) {
                 statusText.innerText = "Camera access denied. Please allow camera.";
                 return;
@@ -659,19 +467,7 @@
             initThreeJS();
         }
 
-        // Event listeners
         startBtn.addEventListener('click', startApp);
-        
-        document.getElementById('discover-btn').addEventListener('click', () => {
-            discoverModeActive = !discoverModeActive;
-            const btn = document.getElementById('discover-btn');
-            btn.classList.toggle('active');
-            btn.innerText = discoverModeActive ? '🔍 ON' : '🔍 Discover';
-            if (!discoverModeActive) {
-                document.getElementById('discover-notification').style.display = 'none';
-                discoverTimer = 0;
-            }
-        });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             clearConstellationLines();
