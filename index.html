@@ -22,11 +22,12 @@
             user-select: none;
             -webkit-user-select: none;
         }
-        #camera-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
-        #camera-container video, #camera-container canvas {
-            width: 100% !important; height: 100% !important; object-fit: cover;
-        }
+        #camera-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: #000; }
+        #camera-container video { width: 100% !important; height: 100% !important; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+        #camera-container canvas { position: absolute; top: 0; left: 0; z-index: 2; width: 100% !important; height: 100% !important; }
+        
         #ar-ui-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none; display: none; }
+        
         #permission-screen {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at center, #141923 0%, #050608 100%);
@@ -37,21 +38,34 @@
             text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,0.8);
             width: 85%; max-width: 340px; border: 1px solid var(--glass-border);
         }
-        h1 {
-            font-size: 2.2rem; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px;
-        }
+        h1 { font-size: 2.2rem; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
         #status-text { font-size: 13px; color: #858e96; margin-bottom: 20px; min-height: 20px; }
-        .action-btn {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green)); color: white; border: none; padding: 15px 40px;
-            font-size: 15px; font-weight: 700; border-radius: 30px; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(46, 204, 113, 0.25);
-        }
+        .action-btn { background: linear-gradient(135deg, var(--accent-blue), var(--accent-green)); color: white; border: none; padding: 15px 40px; font-size: 15px; font-weight: 700; border-radius: 30px; cursor: pointer; box-shadow: 0 10px 25px rgba(46, 204, 113, 0.25); }
+
         .dashboard-header { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .telemetry-capsule { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 10px 18px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: monospace; display: flex; gap: 12px; }
-        .status-pill { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .telemetry-capsule { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 10px 18px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: monospace; display: flex; gap: 12px; backdrop-filter: blur(10px); }
+        .status-pill { background: var(--panel-bg); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; backdrop-filter: blur(10px); }
         .pulse-indicator { width: 8px; height: 8px; background-color: var(--accent-red); border-radius: 50%; transition: background-color 0.3s; }
         .tracking-active .pulse-indicator { background-color: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+
+        /* Snapchat Style Scroll Wheel */
+        #constellation-wheel {
+            position: absolute;
+            bottom: 30px; left: 0; width: 100%;
+            display: flex; gap: 15px;
+            overflow-x: auto; scroll-snap-type: x mandatory;
+            padding: 15px 20px; pointer-events: auto;
+            scrollbar-width: none;
+        }
+        #constellation-wheel::-webkit-scrollbar { display: none; }
+        .wheel-item {
+            scroll-snap-align: center;
+            background: var(--panel-bg); border: 1px solid var(--glass-border);
+            padding: 12px 24px; border-radius: 15px; white-space: nowrap;
+            font-size: 14px; font-weight: 600; color: #ccc;
+            backdrop-filter: blur(10px); transition: all 0.2s;
+        }
+        .wheel-item.active { background: rgba(52, 152, 219, 0.3); border-color: var(--accent-blue); color: #fff; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -59,7 +73,7 @@
         <div class="loader-card">
             <h1>Constellation AR</h1>
             <p id="status-text">Initializing Star Engine...</p>
-            <button id="start-btn" class="action-btn" style="display: none;">Allow Sky Tracking</button>
+            <button id="start-btn" class="action-btn" style="display: none;">Allow AR & Tracking</button>
         </div>
     </div>
 
@@ -76,16 +90,16 @@
                 <span id="hud-text">CALIBRATING</span>
             </div>
         </div>
+        <div id="constellation-wheel"></div>
     </div>
 
-    <!-- Load Libraries First -->
     <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <script>
         let scene, camera, renderer, starsGroup;
         let userLat, userLon;
-        let astronomicalData = { stars: [], lines: [], names: [] };
+        let astronomicalData = { stars: [], lines: {}, names: [] };
 
         const permissionScreen = document.getElementById('permission-screen');
         const statusText = document.getElementById('status-text');
@@ -96,18 +110,17 @@
             try {
                 statusText.innerText = "Downloading Star Catalogs...";
                 const [starsRes, linesRes, namesRes] = await Promise.all([
-                    fetch('data/stars.6.json').then(r => { if(!r.ok) throw new Error('Stars 404'); return r.json(); }),
-                    fetch('data/constellations.lines.json').then(r => { if(!r.ok) throw new Error('Lines 404'); return r.json(); }),
-                    fetch('data/starnames.json').then(r => { if(!r.ok) throw new Error('Names 404'); return r.json(); })
+                    fetch('data/stars.6.json').then(r => r.json()),
+                    fetch('data/constellations.lines.json').then(r => r.json()),
+                    fetch('data/starnames.json').then(r => r.json())
                 ]);
                 astronomicalData.stars = starsRes.features;
                 astronomicalData.lines = linesRes;
                 astronomicalData.names = namesRes;
-                statusText.innerText = "Star data loaded successfully!";
+                statusText.innerText = "Data loaded. Ready for AR.";
                 startBtn.style.display = 'block';
             } catch (err) {
                 statusText.innerText = "Data Error: " + err.message;
-                console.error("Data Load Error:", err);
             }
         }
 
@@ -118,18 +131,29 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.domElement.style.position = 'absolute';
-            renderer.domElement.style.zIndex = '2';
             document.getElementById('camera-container').appendChild(renderer.domElement);
 
             starsGroup = new THREE.Group();
             scene.add(starsGroup);
             scene.add(new THREE.AmbientLight(0xffffff, 1));
 
-            const starGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-            const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            // Create a glowing texture for stars instead of 3D spheres
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            gradient.addColorStop(0.4, 'rgba(255,255,255,0.4)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 64, 64);
+            const starTexture = new THREE.CanvasTexture(canvas);
 
-            let starCount = 0;
+            // Use BufferGeometry for performance
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            
             astronomicalData.stars.forEach(feature => {
                 const ra = feature.geometry.coordinates[0];
                 const dec = feature.geometry.coordinates[1];
@@ -141,15 +165,44 @@
                 const y = 100 * Math.cos(phi);
                 const z = 100 * Math.sin(phi) * Math.sin(theta);
 
-                const star = new THREE.Mesh(starGeometry, starMaterial.clone());
-                star.position.set(x, y, z);
-                starsGroup.add(star);
-                starCount++;
+                positions.push(x, y, z);
             });
 
-            document.getElementById('star-count').innerText = starCount;
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 1.2,
+                map: starTexture,
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: false // Keeps stars same pixel size regardless of distance
+            });
+
+            const stars = new THREE.Points(geometry, material);
+            starsGroup.add(stars);
+            document.getElementById('star-count').innerText = astronomicalData.stars.length;
+
+            populateWheel();
             window.addEventListener('resize', onWindowResize, false);
             animate();
+        }
+
+        function populateWheel() {
+            const wheel = document.getElementById('constellation-wheel');
+            wheel.innerHTML = '';
+            const constellations = Object.keys(astronomicalData.lines);
+            
+            constellations.forEach((name, index) => {
+                const item = document.createElement('div');
+                item.className = 'wheel-item' + (index === 0 ? ' active' : '');
+                item.innerText = name.toUpperCase();
+                item.onclick = () => {
+                    document.querySelectorAll('.wheel-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                };
+                wheel.appendChild(item);
+            });
         }
 
         function onWindowResize() {
@@ -163,17 +216,12 @@
             renderer.render(scene, camera);
         }
 
-        // CRITICAL FIX: Use Quaternions instead of Euler angles to prevent Gimbal Lock
         const eul = new THREE.Euler();
         function handleOrientation(event) {
             if (userLat === undefined) return; 
-
-            // Convert device orientation to radians
             const alpha = THREE.Math.degToRad(event.alpha);
             const beta = THREE.Math.degToRad(event.beta);
             const gamma = THREE.Math.degToRad(event.gamma);
-
-            // 'YXZ' order is the standard for mapping mobile sensors to 3D space
             eul.set(beta, alpha, -gamma, 'YXZ');
             starsGroup.quaternion.setFromEuler(eul);
 
@@ -183,8 +231,23 @@
 
         async function startApp() {
             startBtn.style.display = 'none';
-            statusText.innerText = "Requesting GPS Location...";
+            statusText.innerText = "Requesting Camera Access...";
 
+            try {
+                // Request Back Camera
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.setAttribute('playsinline', '');
+                video.muted = true;
+                document.getElementById('camera-container').appendChild(video);
+                await video.play();
+            } catch (err) {
+                statusText.innerText = "Camera Access Denied.";
+                return;
+            }
+
+            statusText.innerText = "Requesting GPS Location...";
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     userLat = pos.coords.latitude;
@@ -208,9 +271,7 @@
                         launchAR();
                     }
                 },
-                (err) => {
-                    statusText.innerText = "GPS Permission Denied. Please enable in browser settings.";
-                },
+                (err) => { statusText.innerText = "GPS Permission Denied."; },
                 { enableHighAccuracy: true }
             );
         }
@@ -222,15 +283,7 @@
         }
 
         startBtn.addEventListener('click', startApp);
-        
-        // Wait for libraries to load before fetching data
-        window.onload = () => {
-            if (typeof THREE !== 'undefined' && typeof Astronomy !== 'undefined') {
-                loadData();
-            } else {
-                statusText.innerText = "Error loading 3D libraries. Refresh page.";
-            }
-        };
+        window.onload = () => { if (typeof THREE !== 'undefined' && typeof Astronomy !== 'undefined') loadData(); };
     </script>
 </body>
 </html>
