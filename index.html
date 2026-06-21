@@ -6,14 +6,35 @@
     <title>Constellation AR - Sky Explorer</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <!-- We'll build this out in the next phase -->
-    <div id="app">
-        <h1>Constellation AR</h1>
-        <p>Setup complete. Ready for Phase 2.</p>
+    <!-- Permission Prompt Screen -->
+    <div id="permission-screen">
+        <div class="loader-card">
+            <h1>Constellation AR</h1>
+            <p id="status-text">Initializing Star Engine...</p>
+            <button id="start-btn" class="action-btn" style="display: none;">Allow Sky Tracking</button>
+        </div>
     </div>
+
+    <!-- AR Background Camera Feed -->
+    <div id="camera-container"></div>
+
+    <!-- AR UI Overlays -->
+    <div id="ar-ui-layer">
+        <div class="dashboard-header">
+            <div class="telemetry-capsule">
+                <div>STARS: <span id="star-count" style="color:var(--accent-green)">0</span></div>
+                <div>GPS: <span id="gps-status" style="color:var(--accent-red)">OFF</span></div>
+            </div>
+            <div class="status-pill" id="orientation-status">
+                <span class="pulse-indicator"></span>
+                <span id="hud-text">CALIBRATING</span>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
