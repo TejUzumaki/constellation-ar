@@ -1,0 +1,14 @@
+{
+  "name": "constellation-ar",
+  "version": "1.0.0",
+  "description": "WebAR Constellation Searcher - Point your phone at the sky to find constellations",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve . -p 3000",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["ar", "webxr", "astronomy", "constellation", "three.js"],
+  "author": "Your Name",
+  "license": "MIT"
+}
